@@ -22,7 +22,9 @@ const editingId = computed(() => {
 
 const editingInquiry = computed(() => (editingId.value ? store.findInquiry(editingId.value) : null))
 const form = reactive<ProductInquiryFormModel>(store.createEmptyForm())
-const moreOpen = ref<string[]>([])
+
+// Progressive disclosure for extra info
+const showMoreInfo = ref(false)
 
 if (editingInquiry.value) {
   if (!canEdit(editingInquiry.value)) {
@@ -30,8 +32,9 @@ if (editingInquiry.value) {
     router.replace({ name: 'ProductInquiryDetail', params: { id: editingInquiry.value.id } })
   } else {
     Object.assign(form, editingInquiry.value)
-    moreOpen.value =
-      form.productModel || form.productType || form.brandName || form.limitPrice || form.specParams ? ['more'] : []
+    if (form.productModel || form.productType || form.brandName || form.limitPrice || form.specParams) {
+      showMoreInfo.value = true
+    }
   }
 }
 
@@ -88,94 +91,168 @@ const saveInquiry = () => {
     }
 
     showToast('询价信息已更新')
-    router.push({ name: 'ProductInquiryDetail', params: { id: updated.id } })
+    router.replace({ name: 'ProductInquiryDetail', params: { id: updated.id } })
     return
   }
 
   const created = store.createInquiry(buildPayload())
   showToast('询价已新建')
-  router.push({ name: 'ProductInquiryDetail', params: { id: created.id } })
+  router.replace({ name: 'ProductInquiryDetail', params: { id: created.id } })
 }
 </script>
 
 <template>
-  <main class="form-page min-h-svh bg-app pb-24">
-    <van-form class="mobile-form px-3 py-3" @submit="saveInquiry">
-      <section class="mb-3 px-1 pt-1">
-        <h1 class="m-0 text-xl font-extrabold leading-tight text-slate-900">产品询价</h1>
+  <main class="min-h-svh bg-slate-50 [padding-bottom:calc(100px+env(safe-area-inset-bottom))]">
+    <van-form class="px-4 pt-4 space-y-4" @submit="saveInquiry">
+      
+      <!-- 询价信息 Group -->
+      <section class="rounded-2xl bg-white p-1 shadow-sm overflow-hidden">
+        <div class="px-3 pt-3 pb-1 text-[13px] font-bold text-slate-400">询价信息</div>
+        <van-cell-group :border="false" class="!bg-transparent">
+          <van-field v-model="form.customerName" label="客户名称" placeholder="请输入" required input-align="right" :border="true" />
+          <van-field v-model="form.opportunityName" label="商机名称" placeholder="请输入" required input-align="right" :border="true" />
+          <van-field v-model.number="form.inquiryQuantity" label="询价数量" type="number" placeholder="0" required input-align="right" :border="true" />
+          <van-field v-model.number="form.implementationUnitPrice" label="实施单价" type="number" placeholder="0.00" required input-align="right" :border="true" />
+          <div class="px-4 py-3">
+            <div class="text-[14px] text-slate-700 mb-2">询价备注 <span class="text-red-500">*</span></div>
+            <textarea
+              v-model="form.inquiryRemark"
+              rows="3"
+              class="w-full rounded-xl bg-slate-50 p-3 text-[14px] text-slate-900 outline-none placeholder-slate-400 transition-colors focus:bg-blue-50/50"
+              placeholder="请输入询价相关的背景、要求等..."
+              maxlength="500"
+            ></textarea>
+            <div class="text-right text-[11px] text-slate-400 mt-1">{{ form.inquiryRemark?.length || 0 }}/500</div>
+          </div>
+        </van-cell-group>
       </section>
 
-      <section class="form-section mb-2.5 overflow-hidden rounded-lg border border-line bg-white">
-        <h3>询价信息</h3>
-        <van-field v-model="form.customerName" label="客户名称" placeholder="请输入客户名称" required />
-        <van-field v-model="form.opportunityName" label="商机名称" placeholder="请输入商机名称" required />
-        <van-field v-model.number="form.inquiryQuantity" label="询价数量" type="number" required />
-        <van-field v-model.number="form.implementationUnitPrice" label="实施单价" type="number" required />
-        <van-field
-          v-model="form.inquiryRemark"
-          label="询价备注"
-          type="textarea"
-          rows="3"
-          maxlength="500"
-          show-word-limit
-          required
-        />
-      </section>
-
-      <section class="form-section mb-2.5 overflow-hidden rounded-lg border border-line bg-white">
-        <h3>预备产品信息</h3>
-        <van-field v-model="form.productName" label="产品名称" placeholder="请输入产品名称" required />
-        <van-field label="产品渠道" required>
-          <template #input>
-            <van-radio-group v-model="form.productChannel" direction="horizontal">
-              <van-radio v-for="item in productChannelOptions" :key="item" :name="item">
+      <!-- 产品信息 Group -->
+      <section class="rounded-2xl bg-white p-1 shadow-sm overflow-hidden">
+        <div class="px-3 pt-3 pb-1 text-[13px] font-bold text-slate-400">产品预备信息</div>
+        <van-cell-group :border="false" class="!bg-transparent">
+          <van-field v-model="form.productName" label="产品名称" placeholder="请输入" required input-align="right" :border="true" />
+          <van-field v-model="form.productCategory" label="产品分类" placeholder="请输入" required input-align="right" :border="true" />
+          <van-field v-model="form.unitName" label="单位" placeholder="如：台 / 套" required input-align="right" :border="true" />
+          
+          <div class="px-4 py-3 border-b border-slate-100/60">
+            <div class="text-[14px] text-slate-700 mb-2">产品渠道 <span class="text-red-500">*</span></div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="item in productChannelOptions" :key="item"
+                type="button"
+                class="px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
+                :class="form.productChannel === item ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-50 text-slate-600 active:bg-slate-100'"
+                @click="form.productChannel = item"
+              >
                 {{ item }}
-              </van-radio>
-            </van-radio-group>
-          </template>
-        </van-field>
-        <van-field v-model="form.productCategory" label="产品分类" placeholder="请输入产品分类" required />
-        <van-field v-model="form.unitName" label="单位" placeholder="如 台 / 套 / 年" required />
-        <van-field label="保修期" required>
-          <template #input>
-            <van-radio-group v-model="form.warrantyPeriod" direction="horizontal">
-              <van-radio v-for="item in warrantyOptions" :key="item" :name="item">
+              </button>
+            </div>
+          </div>
+
+          <div class="px-4 py-3">
+            <div class="text-[14px] text-slate-700 mb-2">保修期 <span class="text-red-500">*</span></div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="item in warrantyOptions" :key="item"
+                type="button"
+                class="px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
+                :class="form.warrantyPeriod === item ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-50 text-slate-600 active:bg-slate-100'"
+                @click="form.warrantyPeriod = item"
+              >
                 {{ item }}
-              </van-radio>
-            </van-radio-group>
-          </template>
-        </van-field>
+              </button>
+            </div>
+          </div>
+        </van-cell-group>
       </section>
 
-      <van-collapse v-model="moreOpen" class="more-collapse mb-2.5 overflow-hidden rounded-lg border border-line bg-white">
-        <van-collapse-item name="more" title="更多信息">
-          <van-field v-model="form.productModel" label="产品型号" placeholder="选填" />
-          <van-field label="产品类型">
-            <template #input>
-              <van-radio-group v-model="form.productType" direction="horizontal">
-                <van-radio v-for="item in productTypeOptions" :key="item.value" :name="item.value">
+      <!-- 更多信息 (Progressive Disclosure) -->
+      <section class="rounded-2xl bg-white shadow-sm overflow-hidden transition-all duration-300" :class="showMoreInfo ? 'p-1' : ''">
+        <button
+          v-if="!showMoreInfo"
+          type="button"
+          class="w-full py-4 flex items-center justify-center gap-1 text-[14px] font-medium text-blue-600 active:bg-slate-50"
+          @click="showMoreInfo = true"
+        >
+          展开更多选填信息
+          <van-icon name="arrow-down" />
+        </button>
+
+        <div v-else>
+          <div class="px-3 pt-3 pb-1 text-[13px] font-bold text-slate-400 flex justify-between items-center">
+            更多信息
+            <van-icon name="arrow-up" class="text-slate-400 p-1 active:bg-slate-50 rounded" @click="showMoreInfo = false" />
+          </div>
+          <van-cell-group :border="false" class="!bg-transparent">
+            <van-field v-model="form.productModel" label="产品型号" placeholder="选填" input-align="right" :border="true" />
+            <van-field v-model="form.brandName" label="品牌" placeholder="选填" input-align="right" :border="true" />
+            <van-field v-model.number="form.limitPrice" label="限价" type="number" placeholder="选填" input-align="right" :border="true" />
+            
+            <div class="px-4 py-3 border-b border-slate-100/60">
+              <div class="text-[14px] text-slate-700 mb-2">产品类型</div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="item in productTypeOptions" :key="item.value"
+                  type="button"
+                  class="px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
+                  :class="form.productType === item.value ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-50 text-slate-600 active:bg-slate-100'"
+                  @click="form.productType = item.value"
+                >
                   {{ item.label }}
-                </van-radio>
-              </van-radio-group>
-            </template>
-          </van-field>
-          <van-field v-model="form.brandName" label="品牌" placeholder="选填" />
-          <van-field v-model.number="form.limitPrice" label="限价" type="number" placeholder="选填" />
-          <van-field
-            v-model="form.specParams"
-            label="规格参数"
-            type="textarea"
-            rows="3"
-            maxlength="1000"
-            show-word-limit
-            placeholder="选填"
-          />
-        </van-collapse-item>
-      </van-collapse>
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 py-3">
+              <div class="text-[14px] text-slate-700 mb-2">规格参数</div>
+              <textarea
+                v-model="form.specParams"
+                rows="3"
+                class="w-full rounded-xl bg-slate-50 p-3 text-[14px] text-slate-900 outline-none placeholder-slate-400 transition-colors focus:bg-blue-50/50"
+                placeholder="选填，请输入规格参数..."
+                maxlength="1000"
+              ></textarea>
+              <div class="text-right text-[11px] text-slate-400 mt-1">{{ form.specParams?.length || 0 }}/1000</div>
+            </div>
+          </van-cell-group>
+        </div>
+      </section>
+
     </van-form>
 
-    <div class="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[430px] border-t border-line bg-white/95 px-3 py-2.5 shadow-mobile backdrop-blur-xl [padding-bottom:calc(10px+env(safe-area-inset-bottom))]">
-      <van-button block type="primary" @click="saveInquiry">保存</van-button>
+    <!-- Action Bar -->
+    <div class="fixed inset-x-0 bottom-0 z-20 px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] bg-white/80 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+      <button
+        class="w-full rounded-full bg-blue-600 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-blue-500/30 transition-transform active:scale-95"
+        @click="saveInquiry"
+      >
+        {{ editingId ? '保存更改' : '提交询价' }}
+      </button>
     </div>
   </main>
 </template>
+
+<style scoped>
+/* Remove default vant borders inside card */
+:deep(.van-cell:after) {
+  border-bottom-color: rgba(241, 245, 249, 0.6) !important;
+  left: 16px;
+  right: 16px;
+}
+:deep(.van-cell) {
+  padding: 16px;
+  background: transparent;
+}
+:deep(.van-field__label) {
+  color: #334155; /* slate-700 */
+}
+:deep(.van-field__control) {
+  font-weight: 500;
+  color: #0f172a; /* slate-900 */
+}
+:deep(.van-field__control::placeholder) {
+  color: #94a3b8; /* slate-400 */
+  font-weight: normal;
+}
+</style>

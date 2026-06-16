@@ -9,7 +9,6 @@ import {
   canWithdraw,
   formatMoney,
   getProductTypeLabel,
-  statusType,
 } from '../utils/productInquiry'
 
 const route = useRoute()
@@ -18,113 +17,188 @@ const store = useProductInquiryStore()
 
 const inquiryId = computed(() => Number(route.params.id))
 const inquiry = computed(() => store.findInquiry(inquiryId.value))
-const hasActions = computed(() => canEdit(inquiry.value) || canSubmit(inquiry.value) || canWithdraw(inquiry.value))
+const hasActions = computed(() => {
+  if (!inquiry.value) return false
+  return canEdit(inquiry.value) || canSubmit(inquiry.value) || canWithdraw(inquiry.value)
+})
 
 const openEdit = () => {
-  if (!inquiry.value) {
-    return
-  }
-
+  if (!inquiry.value) return
   if (!canEdit(inquiry.value)) {
     showToast('当前状态主要用于查看，不建议编辑')
     return
   }
-
   router.push({ name: 'ProductInquiryEdit', params: { id: inquiry.value.id } })
 }
 
 const changeStatus = async (action: 'submit' | 'withdraw') => {
-  if (!inquiry.value) {
-    return
-  }
-
+  if (!inquiry.value) return
   const isWithdraw = action === 'withdraw'
   try {
     await showConfirmDialog({
       title: isWithdraw ? '确认撤回询价？' : '确认提交询价？',
       message: isWithdraw ? '撤回后状态将回到未提交。' : '提交后将进入待确认状态。',
       confirmButtonText: isWithdraw ? '撤回' : '提交',
+      confirmButtonColor: isWithdraw ? '#f97316' : '#2563eb'
     })
   } catch {
     return
   }
-
   if (isWithdraw) {
     store.withdrawInquiry(inquiry.value.id)
     showToast('已撤回')
     return
   }
-
   store.submitInquiry(inquiry.value.id)
   showToast('已提交')
+}
+
+const getStatusClass = (status: string) => {
+  switch (status) {
+    case '待补充': return 'bg-orange-50 text-orange-600'
+    case '待确认': return 'bg-blue-50 text-blue-600'
+    case '已确认': return 'bg-green-50 text-green-600'
+    case '已驳回': return 'bg-red-50 text-red-600'
+    case '已撤回': return 'bg-slate-100 text-slate-600'
+    default: return 'bg-slate-50 text-slate-600'
+  }
 }
 </script>
 
 <template>
-  <main class="detail-page min-h-svh bg-app" :class="{ 'pb-24': hasActions }">
+  <main class="min-h-svh bg-slate-50 pb-6" :class="{ '[padding-bottom:calc(100px+env(safe-area-inset-bottom))]': hasActions }">
     <van-empty v-if="!inquiry" description="未找到该产品询价" />
 
     <template v-else>
-      <section class="detail-hero flex items-start justify-between gap-3.5 border-b border-line bg-white px-4 py-[18px]">
-        <div>
-          <span>当前状态</span>
-          <h1>{{ inquiry.productName }}</h1>
+      <!-- Hero Section -->
+      <section class="bg-white px-5 pt-8 pb-6 mb-3 rounded-b-3xl shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="rounded-md px-2 py-1 text-[11px] font-bold" :class="getStatusClass(inquiry.status)">
+            {{ inquiry.status }}
+          </span>
+          <span class="text-xs font-medium text-slate-400">{{ inquiry.updatedAt }}</span>
         </div>
-        <van-tag :type="statusType(inquiry.status)" size="large" round>
-          {{ inquiry.status }}
-        </van-tag>
+        <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">{{ inquiry.productName }}</h1>
       </section>
 
-      <van-notice-bar
-        v-if="inquiry.status === '已驳回'"
-        left-icon="warning-o"
-        color="#b42318"
-        background="#fff1f0"
-        :text="inquiry.rejectReason"
-      />
-
-      <section class="detail-block m-3 rounded-lg border border-line bg-white p-3.5">
-        <h2>询价信息</h2>
-        <div class="info-grid grid grid-cols-2 gap-2.5 max-[360px]:grid-cols-1">
-          <div class="min-w-0 rounded-lg bg-slate-50 p-2.5"><span>客户名称</span><strong>{{ inquiry.customerName }}</strong></div>
-          <div class="min-w-0 rounded-lg bg-slate-50 p-2.5"><span>商机名称</span><strong>{{ inquiry.opportunityName }}</strong></div>
-          <div class="min-w-0 rounded-lg bg-slate-50 p-2.5"><span>关联销售</span><strong>{{ inquiry.salesUserName }}</strong></div>
-          <div class="min-w-0 rounded-lg bg-slate-50 p-2.5"><span>询价数量</span><strong>{{ inquiry.inquiryQuantity }} {{ inquiry.unitName }}</strong></div>
-          <div class="min-w-0 rounded-lg bg-slate-50 p-2.5"><span>实施单价</span><strong>{{ formatMoney(inquiry.implementationUnitPrice) }}</strong></div>
-          <div class="min-w-0 rounded-lg bg-slate-50 p-2.5"><span>限价</span><strong>{{ formatMoney(inquiry.limitPrice) }}</strong></div>
+      <div class="px-4 space-y-4">
+        <!-- Reject Reason -->
+        <div v-if="inquiry.status === '已驳回'" class="rounded-2xl bg-red-50 p-4 shadow-sm flex gap-3 items-start">
+          <van-icon name="warning" class="text-red-500 text-lg mt-0.5" />
+          <div>
+            <h3 class="text-sm font-bold text-red-800 mb-1">驳回原因</h3>
+            <p class="text-[13px] text-red-700 leading-relaxed">{{ inquiry.rejectReason }}</p>
+          </div>
         </div>
-        <div class="remark-box mt-3 overflow-wrap-anywhere rounded-lg bg-slate-50 p-2.5 text-sm leading-relaxed text-slate-700">
-          {{ inquiry.inquiryRemark || '暂无备注' }}
-        </div>
-      </section>
 
-      <section class="detail-block m-3 rounded-lg border border-line bg-white p-3.5">
-        <h2>产品预备信息</h2>
-        <van-cell title="产品名称" :value="inquiry.productName" />
-        <van-cell title="渠道" :value="inquiry.productChannel" />
-        <van-cell title="分类" :value="inquiry.productCategory" />
-        <van-cell title="型号" :value="inquiry.productModel || '-'" />
-        <van-cell title="类型" :value="getProductTypeLabel(inquiry.productType)" />
-        <van-cell title="品牌" :value="inquiry.brandName || '-'" />
-        <van-cell title="单位" :value="inquiry.unitName" />
-        <van-cell title="保修期" :value="inquiry.warrantyPeriod" />
-        <div class="spec-box mt-3 rounded-lg bg-slate-50 p-2.5 text-sm leading-relaxed text-slate-700">
-          <span>规格参数</span>
-          <p>{{ inquiry.specParams || '暂无规格参数' }}</p>
-        </div>
-      </section>
+        <!-- Inquiry Info Card -->
+        <section class="rounded-2xl bg-white p-5 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <van-icon name="label" class="text-blue-500" />
+            询价信息
+          </h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">客户名称</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.customerName }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">商机名称</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.opportunityName }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">关联销售</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.salesUserName }}</span>
+            </div>
+            
+            <div class="h-px bg-slate-100 my-2"></div>
+            
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">询价数量</span>
+              <span class="text-[14px] font-bold text-slate-900 text-right">{{ inquiry.inquiryQuantity }} <span class="font-normal text-slate-500 text-xs">{{ inquiry.unitName }}</span></span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">实施单价</span>
+              <span class="text-[14px] font-bold text-slate-900 text-right">{{ formatMoney(inquiry.implementationUnitPrice) }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">限价</span>
+              <span class="text-[14px] font-bold text-slate-900 text-right">{{ formatMoney(inquiry.limitPrice) || '-' }}</span>
+            </div>
+            
+            <div v-if="inquiry.inquiryRemark" class="mt-4 rounded-xl bg-slate-50 p-4 text-[13px] leading-relaxed text-slate-700">
+              <div class="text-xs font-bold text-slate-400 mb-1">备注</div>
+              {{ inquiry.inquiryRemark }}
+            </div>
+          </div>
+        </section>
 
+        <!-- Product Info Card -->
+        <section class="rounded-2xl bg-white p-5 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <van-icon name="apps-o" class="text-blue-500" />
+            预备产品信息
+          </h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">渠道</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.productChannel }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">分类</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.productCategory }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">型号</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.productModel || '-' }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">类型</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ getProductTypeLabel(inquiry.productType) || '-' }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">品牌</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.brandName || '-' }}</span>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <span class="text-[14px] text-slate-500 shrink-0">保修期</span>
+              <span class="text-[14px] font-semibold text-slate-900 text-right">{{ inquiry.warrantyPeriod }}</span>
+            </div>
+            
+            <div v-if="inquiry.specParams" class="mt-4 rounded-xl bg-slate-50 p-4 text-[13px] leading-relaxed text-slate-700">
+              <div class="text-xs font-bold text-slate-400 mb-1">规格参数</div>
+              {{ inquiry.specParams }}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Action Bar -->
       <div
         v-if="hasActions"
-        class="detail-actions fixed inset-x-0 bottom-0 z-20 mx-auto grid max-w-[430px] grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2.5 border-t border-line bg-white/95 px-3 py-2.5 shadow-mobile backdrop-blur-xl [padding-bottom:calc(10px+env(safe-area-inset-bottom))]"
+        class="fixed inset-x-0 bottom-0 z-20 flex gap-3 px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] bg-white/80 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.03)]"
       >
-        <van-button v-if="canEdit(inquiry)" plain type="primary" @click="openEdit">编辑</van-button>
-        <van-button v-if="canSubmit(inquiry)" type="success" @click="changeStatus('submit')">
+        <button
+          v-if="canEdit(inquiry)"
+          class="flex-1 rounded-full bg-blue-50 py-3.5 text-[15px] font-bold text-blue-600 transition-transform active:scale-95"
+          @click="openEdit"
+        >
+          编辑
+        </button>
+        <button
+          v-if="canSubmit(inquiry)"
+          class="flex-1 rounded-full bg-blue-600 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-blue-500/30 transition-transform active:scale-95"
+          @click="changeStatus('submit')"
+        >
           提交
-        </van-button>
-        <van-button v-if="canWithdraw(inquiry)" type="warning" @click="changeStatus('withdraw')">
+        </button>
+        <button
+          v-if="canWithdraw(inquiry)"
+          class="flex-1 rounded-full bg-orange-100 py-3.5 text-[15px] font-bold text-orange-600 transition-transform active:scale-95"
+          @click="changeStatus('withdraw')"
+        >
           撤回
-        </van-button>
+        </button>
       </div>
     </template>
   </main>

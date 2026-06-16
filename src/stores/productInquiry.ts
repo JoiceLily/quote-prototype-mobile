@@ -193,9 +193,7 @@ const filteredInquiries = computed(() => {
   })
 })
 
-const todoCount = computed(
-  () => inquiries.value.filter((item) => item.status === '未提交' || item.status === '已驳回').length,
-)
+const rejectCount = computed(() => inquiries.value.filter((item) => item.status === '已驳回').length)
 
 const waitingCount = computed(() => inquiries.value.filter((item) => item.status === '待确认').length)
 
@@ -280,7 +278,7 @@ export const useProductInquiryStore = () => ({
   inquiries,
   filters,
   filteredInquiries,
-  todoCount,
+  rejectCount,
   waitingCount,
   resetFilters,
   findInquiry,
