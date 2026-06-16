@@ -103,10 +103,10 @@ const getStatusStyle = (status: string) => {
 
         <!-- Inquiry Info Card -->
         <section class="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <van-icon name="label" class="text-blue-500" />
-            询价信息
-          </h2>
+          <div class="flex items-center mb-4">
+            <div class="w-1 h-3.5 bg-blue-600 rounded-full mr-2"></div>
+            <h2 class="text-sm font-semibold text-gray-800">询价信息</h2>
+          </div>
           <div class="space-y-4">
             <div class="flex justify-between items-start gap-4">
               <span class="text-[14px] text-slate-500 shrink-0">客户名称</span>
@@ -145,10 +145,10 @@ const getStatusStyle = (status: string) => {
 
         <!-- Product Info Card -->
         <section class="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <van-icon name="apps-o" class="text-blue-500" />
-            预备产品信息
-          </h2>
+          <div class="flex items-center mb-4">
+            <div class="w-1 h-3.5 bg-blue-600 rounded-full mr-2"></div>
+            <h2 class="text-sm font-semibold text-gray-800">预备产品信息</h2>
+          </div>
           <div class="space-y-4">
             <div class="flex justify-between items-start gap-4">
               <span class="text-[14px] text-slate-500 shrink-0">渠道</span>

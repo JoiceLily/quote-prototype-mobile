@@ -114,7 +114,7 @@ const saveInquiry = () => {
           <van-field v-model.number="form.inquiryQuantity" label="询价数量" type="number" placeholder="0" required input-align="right" :border="true" />
           <van-field v-model.number="form.implementationUnitPrice" label="实施单价" type="number" placeholder="0.00" required input-align="right" :border="true" />
           <div class="px-4 py-3">
-            <div class="text-[14px] text-slate-700 mb-2">询价备注 <span class="text-red-500">*</span></div>
+            <div class="text-[14px] text-slate-700 mb-2"><span class="text-red-500 mr-1">*</span>询价备注</div>
             <textarea
               v-model="form.inquiryRemark"
               rows="3"
@@ -136,7 +136,7 @@ const saveInquiry = () => {
           <van-field v-model="form.unitName" label="单位" placeholder="如：台 / 套" required input-align="right" :border="true" />
           
           <div class="px-4 py-3 border-b border-slate-100/60">
-            <div class="text-[14px] text-slate-700 mb-2">产品渠道 <span class="text-red-500">*</span></div>
+            <div class="text-[14px] text-slate-700 mb-2"><span class="text-red-500 mr-1">*</span>产品渠道</div>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="item in productChannelOptions" :key="item"
@@ -151,7 +151,7 @@ const saveInquiry = () => {
           </div>
 
           <div class="px-4 py-3">
-            <div class="text-[14px] text-slate-700 mb-2">保修期 <span class="text-red-500">*</span></div>
+            <div class="text-[14px] text-slate-700 mb-2"><span class="text-red-500 mr-1">*</span>保修期</div>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="item in warrantyOptions" :key="item"
