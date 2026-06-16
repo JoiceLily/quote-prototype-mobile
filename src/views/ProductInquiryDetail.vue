@@ -53,14 +53,24 @@ const changeStatus = async (action: 'submit' | 'withdraw') => {
   showToast('已提交')
 }
 
-const getStatusClass = (status: string) => {
+const getStatusStyle = (status: string) => {
   switch (status) {
-    case '待补充': return 'bg-orange-50 text-orange-600'
-    case '待确认': return 'bg-blue-50 text-blue-600'
-    case '已确认': return 'bg-green-50 text-green-600'
-    case '已驳回': return 'bg-red-50 text-red-600'
-    case '已撤回': return 'bg-slate-100 text-slate-600'
-    default: return 'bg-slate-50 text-slate-600'
+    case '未提交':
+    case '取消上线':
+      return 'bg-gray-100 text-gray-600'
+    case '待处理':
+    case '开始处理':
+      return 'bg-blue-50 text-blue-600'
+    case '审批中':
+      return 'bg-purple-50 text-purple-600'
+    case '待确认':
+      return 'bg-orange-50 text-orange-600'
+    case '处理完毕':
+      return 'bg-green-50 text-green-600'
+    case '已驳回':
+      return 'bg-red-50 text-red-600'
+    default:
+      return 'bg-gray-100 text-gray-600'
   }
 }
 </script>
@@ -73,7 +83,7 @@ const getStatusClass = (status: string) => {
       <!-- Hero Section -->
       <section class="bg-white px-5 pt-8 pb-6 mb-3 rounded-b-3xl shadow-sm">
         <div class="flex items-center gap-2 mb-3">
-          <span class="rounded-md px-2 py-1 text-[11px] font-bold" :class="getStatusClass(inquiry.status)">
+          <span class="rounded-md px-2 py-1 text-[11px] font-bold" :class="getStatusStyle(inquiry.status)">
             {{ inquiry.status }}
           </span>
           <span class="text-xs font-medium text-slate-400">{{ inquiry.updatedAt }}</span>

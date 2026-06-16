@@ -14,14 +14,24 @@ const openDetail = (id: number) => {
   router.push({ name: 'ProductInquiryDetail', params: { id } })
 }
 
-const getStatusClass = (status: string) => {
+const getStatusStyle = (status: string) => {
   switch (status) {
-    case '待补充': return 'bg-orange-50 text-orange-600'
-    case '待确认': return 'bg-blue-50 text-blue-600'
-    case '已确认': return 'bg-green-50 text-green-600'
-    case '已驳回': return 'bg-red-50 text-red-600'
-    case '已撤回': return 'bg-slate-100 text-slate-600'
-    default: return 'bg-slate-50 text-slate-600'
+    case '未提交':
+    case '取消上线':
+      return 'bg-gray-100 text-gray-600'
+    case '待处理':
+    case '开始处理':
+      return 'bg-blue-50 text-blue-600'
+    case '审批中':
+      return 'bg-purple-50 text-purple-600'
+    case '待确认':
+      return 'bg-orange-50 text-orange-600'
+    case '处理完毕':
+      return 'bg-green-50 text-green-600'
+    case '已驳回':
+      return 'bg-red-50 text-red-600'
+    default:
+      return 'bg-gray-100 text-gray-600'
   }
 }
 </script>
@@ -87,7 +97,7 @@ const getStatusClass = (status: string) => {
       >
         <div class="flex items-start justify-between gap-3 mb-3">
           <h2 class="text-base font-bold text-slate-900 leading-tight">{{ item.productName }}</h2>
-          <span class="shrink-0 rounded-md px-2 py-1 text-[11px] font-bold" :class="getStatusClass(item.status)">
+          <span class="shrink-0 rounded-md px-2 py-1 text-[11px] font-bold" :class="getStatusStyle(item.status)">
             {{ item.status }}
           </span>
         </div>
