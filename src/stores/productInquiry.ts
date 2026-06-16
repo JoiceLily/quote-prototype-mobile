@@ -26,7 +26,7 @@ const inquiries = ref<ProductInquiry[]>([
     warrantyPeriod: '1年',
     specParams: '4K 输出，双频 Wi-Fi，HDMI 接口，支持企业级加密。',
     status: '待确认',
-    updatedAt: '2026-06-12 09:42',
+    updatedAt: '2026-06-12 09:42:35',
   },
   {
     id: 10022,
@@ -48,7 +48,7 @@ const inquiries = ref<ProductInquiry[]>([
     specParams: '安卓系统，二维扫码头，IP65，5000mAh 电池。',
     status: '已驳回',
     rejectReason: '缺少产品型号对应的保修策略，请补充后重新提交。',
-    updatedAt: '2026-06-11 18:15',
+    updatedAt: '2026-06-11 18:15:12',
   },
   {
     id: 10023,
@@ -69,7 +69,7 @@ const inquiries = ref<ProductInquiry[]>([
     warrantyPeriod: '1年',
     specParams: 'SaaS 部署，支持 API 对接和组织架构同步。',
     status: '审批中',
-    updatedAt: '2026-06-10 14:28',
+    updatedAt: '2026-06-10 14:28:44',
   },
   {
     id: 10024,
@@ -90,7 +90,7 @@ const inquiries = ref<ProductInquiry[]>([
     warrantyPeriod: '3年',
     specParams: '双目客流，PoE 供电，支持本地算法和云端看板。',
     status: '未提交',
-    updatedAt: '2026-06-09 11:03',
+    updatedAt: '2026-06-09 11:03:51',
   },
   {
     id: 10025,
@@ -111,7 +111,7 @@ const inquiries = ref<ProductInquiry[]>([
     warrantyPeriod: '3年',
     specParams: '8 路继电器输出，RS485 通讯，支持消防联动。',
     status: '待处理',
-    updatedAt: '2026-06-08 16:20',
+    updatedAt: '2026-06-08 16:20:09',
   },
   {
     id: 10026,
@@ -132,7 +132,7 @@ const inquiries = ref<ProductInquiry[]>([
     warrantyPeriod: '6个月',
     specParams: 'REST API，对接 MES、CRM、BI 三套系统，含测试环境联调。',
     status: '开始处理',
-    updatedAt: '2026-06-08 10:05',
+    updatedAt: '2026-06-08 10:05:22',
   },
   {
     id: 10027,
@@ -153,7 +153,7 @@ const inquiries = ref<ProductInquiry[]>([
     warrantyPeriod: '1年',
     specParams: '支持会议室预约、门牌屏同步、企业通讯录同步。',
     status: '处理完毕',
-    updatedAt: '2026-06-07 17:48',
+    updatedAt: '2026-06-07 17:48:30',
   },
   {
     id: 10028,
@@ -174,7 +174,7 @@ const inquiries = ref<ProductInquiry[]>([
     warrantyPeriod: '1年',
     specParams: '双色温补光，含支架、电源适配器和柔光罩。',
     status: '取消上线',
-    updatedAt: '2026-06-06 09:36',
+    updatedAt: '2026-06-06 09:36:18',
   },
 ])
 

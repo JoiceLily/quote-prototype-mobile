@@ -124,7 +124,7 @@ const saveInquiry = () => {
 
 <template>
   <main class="min-h-svh bg-slate-50 [padding-bottom:calc(100px+env(safe-area-inset-bottom))]">
-    <van-form class="px-4 pt-4 space-y-4" @submit="saveInquiry">
+    <van-form class="px-4 pt-4 space-y-3" @submit="saveInquiry">
       
       <!-- 询价信息 Group -->
       <section class="rounded-2xl bg-white p-1 shadow-sm overflow-hidden">
@@ -271,8 +271,9 @@ const saveInquiry = () => {
   right: 16px;
 }
 :deep(.van-cell) {
-  padding: 16px;
+  padding: 12px 16px;
   background: transparent;
+  align-items: center;
 }
 :deep(.van-field__label) {
   color: #334155; /* slate-700 */

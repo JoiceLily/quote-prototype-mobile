@@ -47,7 +47,7 @@ const getStatusStyle = (status: string) => {
         </div>
         <div class="rounded-2xl bg-white p-4 shadow-sm">
           <span class="block text-xs font-medium text-slate-500 mb-1">待确认</span>
-          <strong class="block text-2xl font-bold text-slate-900">{{ store.waitingCount.value }}</strong>
+          <strong class="block text-2xl font-bold text-orange-600">{{ store.waitingCount.value }}</strong>
         </div>
         <div class="rounded-2xl bg-white p-4 shadow-sm">
           <span class="block text-xs font-medium text-slate-500 mb-1">已驳回</span>

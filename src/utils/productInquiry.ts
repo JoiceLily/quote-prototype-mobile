@@ -40,7 +40,7 @@ export const getProductTypeLabel = (value: ProductInquiry['productType']) => {
   return productTypeLabelMap[value]
 }
 
-export const nowText = () => '2026-06-12 10:30'
+export const nowText = () => '2026-06-12 10:30:00'
 
 export const formatMoney = (value: ProductInquiry['limitPrice'] | number) => {
   if (value === '' || value === null || value === undefined) {
