@@ -26,6 +26,27 @@ const form = reactive<ProductInquiryFormModel>(store.createEmptyForm())
 // Progressive disclosure for extra info
 const showMoreInfo = ref(false)
 
+// Warranty Picker State
+const showWarrantyPicker = ref(false)
+const warrantyPickerColumns = warrantyOptions.map(item => ({ text: item, value: item }))
+const warrantyPickerValue = computed({
+  get: () => form.warrantyPeriod ? [form.warrantyPeriod] : [],
+  set: (val) => {
+    if (val && val.length) {
+      form.warrantyPeriod = val[0]
+    }
+  }
+})
+
+const openWarrantyPicker = () => {
+  showWarrantyPicker.value = true
+}
+
+const onWarrantyConfirm = ({ selectedValues }: any) => {
+  form.warrantyPeriod = selectedValues[0]
+  showWarrantyPicker.value = false
+}
+
 if (editingInquiry.value) {
   if (!canEdit(editingInquiry.value)) {
     showToast('当前状态主要用于查看，不建议编辑')
@@ -150,20 +171,18 @@ const saveInquiry = () => {
             </div>
           </div>
 
-          <div class="px-4 py-3">
-            <div class="text-[14px] text-slate-700 mb-2"><span class="text-red-500 mr-1">*</span>保修期</div>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="item in warrantyOptions" :key="item"
-                type="button"
-                class="px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
-                :class="form.warrantyPeriod === item ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-50 text-slate-600 active:bg-slate-100'"
-                @click="form.warrantyPeriod = item"
-              >
-                {{ item }}
-              </button>
-            </div>
-          </div>
+          <van-field
+            v-model="form.warrantyPeriod"
+            is-link
+            readonly
+            name="warrantyPeriod"
+            label="保修期"
+            placeholder="请选择"
+            required
+            input-align="right"
+            :border="true"
+            @click="showWarrantyPicker = true"
+          />
         </van-cell-group>
       </section>
 
@@ -220,6 +239,17 @@ const saveInquiry = () => {
       </section>
 
     </van-form>
+
+    <!-- 保修期 Picker -->
+    <van-popup v-model:show="showWarrantyPicker" position="bottom" round>
+      <van-picker
+        v-model="warrantyPickerValue"
+        title="选择保修期"
+        :columns="warrantyPickerColumns"
+        @confirm="onWarrantyConfirm"
+        @cancel="showWarrantyPicker = false"
+      />
+    </van-popup>
 
     <!-- Action Bar -->
     <div class="fixed inset-x-0 bottom-0 z-20 px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))] bg-white/80 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
