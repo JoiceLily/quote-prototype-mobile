@@ -28,7 +28,11 @@ const openEdit = () => {
     showToast('当前状态主要用于查看，不建议编辑')
     return
   }
-  router.push({ name: 'ProductInquiryEdit', params: { id: inquiry.value.id } })
+  router.push({
+    name: 'ProductInquiryEdit',
+    params: { id: inquiry.value.id },
+    query: { source: 'detail' },
+  })
 }
 
 const changeStatus = async (action: 'submit' | 'withdraw') => {

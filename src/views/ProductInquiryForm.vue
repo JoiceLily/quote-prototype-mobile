@@ -99,6 +99,19 @@ const buildPayload = (): ProductInquiryFormModel => ({
   limitPrice: form.limitPrice === '' ? '' : Number(form.limitPrice),
 })
 
+const returnToDetail = (id: number) => {
+  const detailLocation = { name: 'ProductInquiryDetail', params: { id } }
+  const previousPath = window.history.state?.back
+  const detailPath = router.resolve(detailLocation).fullPath
+
+  if (route.query.source === 'detail' && previousPath === detailPath) {
+    router.back()
+    return
+  }
+
+  router.replace(detailLocation)
+}
+
 const saveInquiry = () => {
   if (!validateForm()) {
     return
@@ -112,7 +125,7 @@ const saveInquiry = () => {
     }
 
     showToast('询价信息已更新')
-    router.replace({ name: 'ProductInquiryDetail', params: { id: updated.id } })
+    returnToDetail(updated.id)
     return
   }
 
