@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import ProductInquiryList from '../views/ProductInquiryList.vue'
 import ProductInquiryDetail from '../views/ProductInquiryDetail.vue'
 import ProductInquiryForm from '../views/ProductInquiryForm.vue'
+import { useProductInquiryStore } from '../stores/productInquiry'
 
 const DEFAULT_TITLE = '报价助手原型-移动端'
 
@@ -56,6 +57,12 @@ const router = createRouter({
       },
     },
   ],
+})
+
+router.beforeEach((to, from) => {
+  if (to.name === 'ProductInquiryList' && from.name === 'Home') {
+    useProductInquiryStore().resetFilters()
+  }
 })
 
 router.afterEach((to) => {
