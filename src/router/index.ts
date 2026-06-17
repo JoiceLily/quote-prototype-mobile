@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../views/Home.vue'
 import ProductInquiryList from '../views/ProductInquiryList.vue'
 import ProductInquiryDetail from '../views/ProductInquiryDetail.vue'
 import ProductInquiryForm from '../views/ProductInquiryForm.vue'
@@ -17,7 +18,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/inquiries',
+      name: 'Home',
+      component: Home
     },
     {
       path: '/inquiries',
