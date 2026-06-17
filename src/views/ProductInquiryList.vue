@@ -1,16 +1,43 @@
 <script setup lang="ts">
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { statusOptions, formatMoney } from '../utils/productInquiry'
 import { useProductInquiryStore } from '../stores/productInquiry'
 
 const router = useRouter()
 const store = useProductInquiryStore()
+const statusScroller = ref<HTMLDivElement | null>(null)
+
+const saveStatusScroll = () => {
+  if (!statusScroller.value) return
+  store.listViewState.statusScrollLeft = statusScroller.value.scrollLeft
+}
+
+const restoreStatusScroll = async () => {
+  await nextTick()
+  const scroller = statusScroller.value
+  if (!scroller) return
+
+  scroller.scrollLeft = store.listViewState.statusScrollLeft
+
+  if (store.listViewState.statusScrollLeft === 0 && store.filters.status !== 'all') {
+    const activeStatus = scroller.querySelector<HTMLButtonElement>('[data-active-status="true"]')
+    activeStatus?.scrollIntoView({ block: 'nearest', inline: 'center' })
+    store.listViewState.statusScrollLeft = scroller.scrollLeft
+  }
+}
+
+const selectStatus = (status: (typeof statusOptions)[number]['value']) => {
+  store.filters.status = status
+  nextTick(saveStatusScroll)
+}
 
 const openCreate = () => {
   router.push({ name: 'ProductInquiryCreate' })
 }
 
 const openDetail = (id: number) => {
+  saveStatusScroll()
   router.push({ name: 'ProductInquiryDetail', params: { id } })
 }
 
@@ -34,6 +61,9 @@ const getStatusStyle = (status: string) => {
       return 'bg-gray-100 text-gray-600'
   }
 }
+
+onMounted(restoreStatusScroll)
+onBeforeUnmount(saveStatusScroll)
 </script>
 
 <template>
@@ -67,18 +97,23 @@ const getStatusStyle = (status: string) => {
           class="!p-0 flex-1 [&_.van-search__content]:bg-white [&_.van-search__content]:shadow-sm"
         />
       </div>
-      <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide [-webkit-overflow-scrolling:touch]">
+      <div
+        ref="statusScroller"
+        class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide [-webkit-overflow-scrolling:touch]"
+        @scroll.passive="saveStatusScroll"
+      >
         <button
           v-for="item in statusOptions"
           :key="item.value"
           type="button"
           class="shrink-0 rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors"
+          :data-active-status="store.filters.status === item.value ? 'true' : undefined"
           :class="
             store.filters.status === item.value
               ? 'bg-slate-900 text-white shadow-sm'
               : 'bg-white text-slate-600 shadow-sm'
           "
-          @click="store.filters.status = item.value"
+          @click="selectStatus(item.value)"
         >
           {{ item.text }}
         </button>

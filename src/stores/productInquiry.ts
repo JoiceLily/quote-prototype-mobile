@@ -183,6 +183,10 @@ const filters = reactive<ProductInquiryFilters>({
   status: 'all',
 })
 
+const listViewState = reactive({
+  statusScrollLeft: 0,
+})
+
 const filteredInquiries = computed(() => {
   const productName = filters.productName.trim().toLowerCase()
 
@@ -200,6 +204,7 @@ const waitingCount = computed(() => inquiries.value.filter((item) => item.status
 const resetFilters = () => {
   filters.productName = ''
   filters.status = 'all'
+  listViewState.statusScrollLeft = 0
 }
 
 const findInquiry = (id: number) => inquiries.value.find((item) => item.id === id)
@@ -277,6 +282,7 @@ const withdrawInquiry = (id: number) => {
 export const useProductInquiryStore = () => ({
   inquiries,
   filters,
+  listViewState,
   filteredInquiries,
   rejectCount,
   waitingCount,
